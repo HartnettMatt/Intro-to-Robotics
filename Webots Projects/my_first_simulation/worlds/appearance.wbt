@@ -1,0 +1,102 @@
+#VRML_SIM R2021b utf8
+WorldInfo {
+  basicTimeStep 16
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.3690858415904951 -0.8638885392626453 -0.34274222568584833 1.6606193868400523
+  position -1.4177519606403064 1.2653538870237895 0.017541985671966326
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Floor {
+  size 1 1
+}
+WoodenBox {
+  translation 0.279963 0.05 -0.258719
+  rotation 0 1 0 -2.094395307179586
+  size 0.1 0.1 0.1
+}
+WoodenBox {
+  translation 0.29323 0.05 0.229333
+  rotation 0 1 0 0.523599
+  name "wooden box(2)"
+  size 0.1 0.1 0.1
+}
+WoodenBox {
+  translation -0.180755 0.05 0.264763
+  rotation 0 1 0 1.8326
+  name "wooden box(1)"
+  size 0.1 0.1 0.1
+}
+E-puck {
+  controller "epuck_go_forward"
+}
+Solid {
+  translation 0.000958 0.15 -0.178065
+  children [
+    DEF BALL Shape {
+      appearance PBRAppearance {
+        baseColorMap ImageTexture {
+          url [
+            "C:/Users/mattm/Pictures/betterLockScreen.png"
+          ]
+        }
+        roughness 1
+        metalness 0
+      }
+      geometry DEF BALL_GEOMETRY Sphere {
+        radius 0.1
+        subdivision 2
+      }
+    }
+  ]
+  boundingObject USE BALL_GEOMETRY
+  physics Physics {
+  }
+}
+Solid {
+  translation 0 0 0.5
+  children [
+    DEF WALL_SHAPE Shape {
+      appearance PBRAppearance {
+        baseColor 0.756863 0.137255 1
+        roughness 0.5
+        metalness 0
+      }
+      geometry Box {
+        size 1 0.05 0.01
+      }
+    }
+  ]
+  name "solid(1)"
+  boundingObject USE WALL_SHAPE
+}
+Solid {
+  translation 0 0 -0.5
+  children [
+    USE WALL_SHAPE
+  ]
+  name "solid(2)"
+  boundingObject USE WALL_SHAPE
+}
+Solid {
+  translation 0.5 0 -1.83656e-06
+  rotation 0 1 0 1.5708
+  children [
+    USE WALL_SHAPE
+  ]
+  name "solid(3)"
+  boundingObject USE WALL_SHAPE
+}
+Solid {
+  translation -0.5 0 1.83656e-06
+  rotation 0 1 0 1.5708
+  children [
+    USE WALL_SHAPE
+  ]
+  name "solid(4)"
+  boundingObject USE WALL_SHAPE
+}

@@ -1,0 +1,26 @@
+#VRML_SIM R2021b utf8
+WorldInfo {
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation 0.9495452922457033 -0.26305234789979165 -0.17078407489701422 5.12037873233898
+  position 0.07532693001112643 0.36454889721845934 0.15247021621067836
+  follow "e-puck"
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 3 3
+}
+E-puck {
+  controller "state_machine"
+}
+Cabinet {
+  translation -0.250002 0 -0.86
+  rotation 0 1 0 1.5708
+}
+WashingMachine {
+  translation 8.0833e-08 0.5 0.83
+}
