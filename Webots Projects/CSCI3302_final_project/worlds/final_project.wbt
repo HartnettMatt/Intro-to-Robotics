@@ -1,0 +1,53 @@
+#VRML_SIM R2021b utf8
+WorldInfo {
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.020939037054820937 -0.9877111654775498 -0.1548812781397316 2.9329814355853734
+  position 1.2752794172759918 4.636741573723635 -5.776765659531127
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 15 15
+  floorTileSize 1 1
+}
+WashingMachine {
+  translation 6.85107 0.51 -6.85107
+  rotation 0.8628559982596194 0.35740699927911007 0.35740699927911007 -1.7177753071795863
+}
+FifaSoccerBall {
+  translation -2.18199 0.0981378 7.03
+  rotation 0 0 -1 1.5836815471722874
+}
+Wall {
+  translation -5 0 5
+  size 5 2.5 0.2
+}
+Wall {
+  translation -5 2.42948 5.01
+  rotation 3.4667507478126767e-07 0.8660241868100456 0.5000021078554363 3.14159
+  name "wall(2)"
+  size 5 2.5 0.2
+}
+Wall {
+  translation -2.39 0 6.2
+  rotation 0 1 0 -1.5707953071795862
+  name "wall(1)"
+  size 2.6 3.8 0.2
+}
+Wall {
+  translation 4.79 0 6.2
+  rotation 0 1 0 -1.5707953071795862
+  name "wall(3)"
+  size 2.6 3.8 0.2
+}
+OilBarrel {
+  translation -7.14 0.44 0
+}
+TeslaModel3Simple {
+  translation 2.25717 0.910117 4.00842
+  rotation -0.21949399663504732 -0.5299049918762916 -0.819159987441868 -0.9363253071795858
+}
