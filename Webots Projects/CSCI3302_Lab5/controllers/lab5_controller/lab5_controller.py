@@ -96,12 +96,12 @@ mode = 'planner'
 ###################
 if mode == 'planner':
     # Part 2.3: Provide start and end in world coordinate frame and convert it to map's frame
-    start_w = None # (Pose_X, Pose_Z) in meters
-    end_w = None # (Pose_X, Pose_Z) in meters
+    start_w = (4.46793, 8.05674) # (Pose_X, Pose_Z) in meters
+    end_w = (5, 8.05674) # (Pose_X, Pose_Z) in meters
 
     # Convert the start_w and end_w from the webots coordinate frame into the map frame
-    start = None # (x, y) in 360x360 map
-    end = None # (x, y) in 360x360 map
+    start = [int(360*start_w[0]/12), int(360*start_w[1]/12)] # (x, y) in 360x360 map
+    end = [int(360*end_w[0]/12), int(360*end_w[1]/12)] # (x, y) in 360x360 map
 
     # Part 2.3: Implement A* or Dijkstra's Algorithm to find a path
     def path_planner(map, start, end):
@@ -111,6 +111,45 @@ if mode == 'planner':
         :param end: A tuple of indices representing the end cell in the map
         :return: A list of tuples as a path from the given start to the given end in the given maze
         '''
+        d = np.full((360, 360), np.inf, dtype=float)
+        prev = np.full((360,360,2), None, dtype=float)
+        d[start] = 0
+        Q = []
+
+        for x in range(360):
+            for y in range(360):
+                if(map[x][y] != 1):
+                    np.append(Q, (x,y))
+
+        while len(Q) != 0:
+            u = nummpy.where(d == numpy.amin(d) ) #issue
+            np.delete(Q, u)
+            
+            if u == end:
+                break
+                
+            
+            for i in range(-1,2):
+                for j in range(-1,2):
+                    v = ((u[0] + i), (u[1] + j))
+                    if v in Q:
+                        if abs(i) == abs(j) and abs(i) == 1:
+                            # Diagonal
+                            alt = math.sqrt(2)
+                        elif abs(i) != abs(j):
+                            # Straight line
+                            alt = 1
+                        if alt < d[u[0]][u[1]]:
+                            d[v[0]][v[1]] = alt
+                            p[v[0]][v[1]] = u
+        # Out of while loop
+        s = []
+        u = end
+        if prev[u[0]][u[1]] is not None or u == start:
+            while u is not None:
+                s.insert(0,u)
+                u = prev[u[0]][u[1]]
+        return s
         pass
 
     # Part 2.1: Load map (map.npy) from disk and visualize it
@@ -127,10 +166,12 @@ if mode == 'planner':
     # plt.show()
     
     # Part 2.3 continuation: Call path_planner
-    path_planner(convoluted_map, start, end)
+    s = path_planner(convoluted_map, start, end)
 
     # Part 2.4: Turn paths into waypoints and save on disk as path.npy and visualize it
-    waypoints = []
+    waypoints = 12*(s/360.0)
+    
+    np.save('path.npy', waypoints)
 
 ######################
 #
@@ -146,7 +187,7 @@ waypoints = []
 
 if mode == 'autonomous':
     # Part 3.1: Load path from disk and visualize it
-    waypoints = [] # Replace with code to load your path
+    waypoints = np.load('path.npy')
 
 state = 0 # use this to iterate through your path
 
@@ -269,26 +310,34 @@ while robot.step(timestep) != -1 and mode != 'planner':
 
 
         #STEP 2: Controller
-        # if abs(alpha) > bearing_error and abs(rho) > position_error:
-            # dX = 0
-            # dTheta = max_rotation * (abs(alpha)/alpha) / 2
-        # elif abs(rho) > position_error:
-            # dX = MAX_SPEED_MS/2
-            # dTheta = 0
+        BEARING_ERROR = 0.05
+        HEADING_ERROR = 0.005
+        MAX_ROTATION_SPEED = 1.75
+        if abs(alpha) > BEARING_ERROR and abs(rho) > POSITION_ERROR:
+            dX = 0
+            dTheta = MAX_ROTATION_SPEED * (abs(alpha)/alpha) / 2
+        elif abs(rho) > POSITION_ERROR:
+            dX = MAX_SPEED_MS/2
+            dTheta = 0
+        elif state < len(waypoint):
+            state = state + 1
         # elif abs(eta) > HEADING_ERROR:
             # dXr = 0
             # dTheta = MAX_ROTATION_SPEED * (abs(eta)/eta) / 2
-        dX = 0
-        dTheta = 0
+        # dX = 0
+        # dTheta = 0
 
         #STEP 3: Compute wheelspeeds
-        vL = 0
-        vR = 0
+        vL = dX - dTheta*AXLE_LENGTH/2
+        vR = dX + dTheta*AXLE_LENGTH/2
 
         # Normalize wheelspeed
         # (Keep the wheel speeds a bit less than the actual platform MAX_SPEED to minimize jerk)
-
-
+        MAX_SPEED_MOD = 0.9
+        if vL > MAX_SPEED*MAX_SPEED_MOD:
+            vL = MAX_SPEED*MAX_SPEED_MOD
+        if vR > MAX_SPEED*MAX_SPEED_MOD:
+            vR = MAX_SPEED*MAX_SPEED_MOD
     # Odometry code. Don't change vL or vR speeds after this line.
     # We are using GPS and compass for this lab to get a better pose but this is how you'll do the odometry
     pose_x += (vL+vR)/2/MAX_SPEED*MAX_SPEED_MS*timestep/1000.0*math.cos(pose_theta)
