@@ -3,8 +3,9 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation -0.4776759035562564 -0.7449716690330492 -0.46566398132110987 1.8679217238651964
-  position -16.291113891022736 35.702703882286194 -1.2849134579580952
+  orientation -0.4368097540419515 0.8544120534207958 0.28138457978906584 1.237519760926909
+  position 1.098737549147801 0.8376529382463936 0.5646249818818698
+  follow "Mavic 2 PRO"
 }
 TexturedBackground {
 }
@@ -24,8 +25,8 @@ SolidTorus {
   rotation 1 0 0 -2.094395307179586
 }
 FifaSoccerBall {
-  translation -2.18199 0.0981378 7.03
-  rotation 0 0 -1 1.5836815471722874
+  translation -2.0784222705331152 0.11182507199996349 7.029999894400788
+  rotation -3.3506717517899184e-07 -3.3941264586912267e-07 -0.9999999999998862 2.5042775634393717
 }
 Wall {
   translation -5 0 5
@@ -89,4 +90,23 @@ StraightStairs {
   translation -2.94 -0.03 -1.72
   rotation 0 1 0 -1.5707953071795862
   name "straight stairs(3)"
+}
+Mavic2Pro {
+  translation -0.043016 0.11177 -0.00162264
+  rotation -0.9994108055688984 -0.024307787171668076 -0.024231656875715747 1.5701199126361054
+  controller "final_controller"
+  bodySlot [
+    SickS300 {
+      translation 0 0 0.15
+      rotation -0.5773502691896258 0.5773502691896258 0.5773502691896258 -2.09
+      enablePhysics FALSE
+    }
+  ]
+  cameraSlot [
+    Camera {
+      width 400
+      height 240
+      near 0.2
+    }
+  ]
 }
