@@ -18,8 +18,8 @@ goal_altitude = 0.5 # meters
 # mode = "manual"
 mode = "path_following"
 
-x = -1
-y = -1
+x = 3
+y = -3
 z = 2
 th = 0
 path_index = 0
@@ -95,7 +95,7 @@ while robot.step(SIM_TIMESTEP) != -1:
     elif mode == "path_following":
         pose_x = gps_values[0]
         pose_y = gps_values[2]
-        pose_theta = yaw
+        pose_theta = -1*yaw
         print("gps values: " + str(gps_values) + " yaw: " + str(yaw))
         goal_altitude = path[path_index][2]
         # Position error:
@@ -108,13 +108,13 @@ while robot.step(SIM_TIMESTEP) != -1:
         print("alpha: " + str(alpha) + " alpha1: " + str(alpha1))
         # Turn to face destination
         if abs(alpha) > BEARING_ERROR and abs(rho) > POSITION_ERROR:
-            yaw_disturbance = -0.1 * (alpha/abs(alpha))
+            yaw_disturbance = 0.1 * (alpha/abs(alpha))
         # Move forward until you get there
         elif abs(rho) > POSITION_ERROR:
-            pitch_disturbance = 1
+            pitch_disturbance = 0.5
         # Turn the final direction
         elif abs(eta) > HEADING_ERROR:
-            yaw_disturbance = 0.1
+            yaw_disturbance = 0.1 * (eta/abs(eta))
 
     roll_input = ROLL_P * clamp(roll, -1, 1) + roll_acceleration + roll_disturbance
     pitch_input = PITCH_P * clamp(pitch, -1, 1) - pitch_acceleration + pitch_disturbance
