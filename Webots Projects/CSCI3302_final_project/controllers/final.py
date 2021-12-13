@@ -77,6 +77,7 @@ for motor in motors:
 
 lidar_sensor_readings = []
 lidar_offsets = np.linspace(-0.5*LIDAR_ANGLE_RANGE, 0.5*LIDAR_ANGLE_RANGE, LIDAR_ANGLE_BINS)
+lidar_map = np.full((MAP_WIDTH, MAP_WIDTH, MAP_HEIGHT), -1.0)
 
 # Main loop:
 # - perform simulation steps until Webots is stopping the controller
@@ -97,14 +98,57 @@ while robot.step(SIM_TIMESTEP) != -1:
     pose_theta = -1*yaw
 
     # Pose of the robot in terms of the lidar map
-    pixel_pose_x = (int)(pose_x*MAP_WIDTH/15)
-    pixel_pose_y = (int)(pose_y*MAP_WIDTH/15)
+    pixel_pose_x = (int)((pose_x+7.5)*MAP_WIDTH/15)
+    pixel_pose_y = (int)((pose_y+7.5)*MAP_WIDTH/15)
     pixel_pose_z = (int)(pose_z*MAP_HEIGHT/5)
 
     # Process sensor data here.
+
+    # Map LIDAR data
+    transform = [[math.sin(pose_theta), -1*math.cos(pose_theta), pose_x],
+                 [math.cos(pose_theta), math.sin(pose_theta), pose_y],
+                 [0,0,1]]
+    lidar_world_x = []
+    lidar_world_y = []
+    for i in range(len(lidar_sensor_readings)):
+        if(lidar_sensor_readings[i] < LIDAR_SENSOR_MAX_RANGE):
+            lidar_robot_x = lidar_sensor_readings[i]*math.cos(lidar_offsets[i])
+            lidar_robot_y = lidar_sensor_readings[i]*math.sin(lidar_offsets[i])
+            lidar_robot = [[lidar_robot_x],
+                           [lidar_robot_y],
+                           [1]]
+            lidar_world = np.matmul(transform, lidar_robot)
+            lidar_world_x.append(lidar_world[0][0])
+            lidar_world_y.append(lidar_world[1][0])
+
+
+    for i in range(len(lidar_world_x)):
+        pixel_lidar_world_x = (int)((lidar_world_x[i]+7.5)*MAP_WIDTH/15)
+        pixel_lidar_world_y = (int)((lidar_world_y[i]+7.5)*MAP_WIDTH/15)
+        lidar_map[pixel_lidar_world_x][pixel_lidar_world_y][pixel_pose_z] = 1
+        delX = lidar_world_x[i] - pose_x
+        delY = lidar_world_y[i] - pose_y
+        dX = delX/n
+        dY = delY/n
+        for j in range(n):
+            x_coord = pixel_pose_x + dX*n
+            y_coord = pixel_pose_y + dY*n
+            lidar_map[x_coord][y_coord][pixel_pose_z] = 0
+
+        display.setColor(0xFFFFFF)
+        display.drawLine(pixel_pose_x, pixel_pose_y, pixel_lidar_world_x, pixel_lidar_world_y)
+        display.setColor(0x0000FF)
+        display.drawPixel(pixel_lidar_world_x, pixel_lidar_world_y)
+
+
+    display.setColor(0xFF0000)
+    display.drawPixel(pixel_pose_x, pixel_pose_y)
+
+    # Handle movement controls
     roll_disturbance = 0
     pitch_disturbance = 0
     yaw_disturbance = 0
+
     if mode == "manual":
         key = keyboard.getKey()
         if key == Keyboard.UP:
