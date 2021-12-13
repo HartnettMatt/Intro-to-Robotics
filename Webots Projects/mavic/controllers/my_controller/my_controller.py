@@ -15,18 +15,8 @@ PITCH_P = 30.0
 
 goal_altitude = 0.5 # meters
 
-# mode = "manual"
-mode = "path_following"
-
-x = -1
-y = -1
-z = 2
-th = 0
-path_index = 0
-path = [[x, y, z, th], [0, 0, 1, math.pi]]
-BEARING_ERROR = 0.10 # approximately pi/3
-POSITION_ERROR = 0.05 # 5cm
-HEADING_ERROR = 0.1
+mode = "manual"
+# mode = "destination"
 
 # create the Robot instance.
 robot = Robot()
@@ -68,8 +58,7 @@ while robot.step(SIM_TIMESTEP) != -1:
     roll = RollPitchYaw[0] + math.pi / 2
     pitch = RollPitchYaw[1]
     yaw = RollPitchYaw[2]
-    gps_values = gps.getValues()
-    altitude = gps_values[1]
+    altitude = gps.getValues()[1]
     gyros = gyro.getValues()
     roll_acceleration = gyros[0]
     pitch_acceleration = gyros[1]
@@ -88,44 +77,19 @@ while robot.step(SIM_TIMESTEP) != -1:
             yaw_disturbance = 1.3
         elif key == Keyboard.LEFT:
             yaw_disturbance = -1.3
-        elif key == keyboard.SHIFT + Keyboard.UP:
-            goal_altitude = goal_altitude + 0.01
-        elif key == keyboard.SHIFT + Keyboard.DOWN:
-            goal_altitude = goal_altitude - 0.01
-    elif mode == "path_following":
-        pose_x = gps_values[0]
-        pose_y = gps_values[2]
-        pose_theta = yaw
-        print("gps values: " + str(gps_values) + " yaw: " + str(yaw))
-        goal_altitude = path[path_index][2]
-        # Position error:
-        rho = math.sqrt((path[path_index][0] - pose_x)**2 + (path[path_index][1] - pose_y)**2)
-        # Bearing error:
-        alpha = math.atan2((path[path_index][1] - pose_y), (path[path_index][0] - pose_x)) - pose_theta
-        alpha1 = math.atan2((pose_y - path[path_index][1]), (pose_x - path[path_index][0])) - pose_theta
-        # Heading error:
-        eta = path[path_index][3] - pose_theta
-        print("alpha: " + str(alpha) + " alpha1: " + str(alpha1))
-        # Turn to face destination
-        if abs(alpha) > BEARING_ERROR and abs(rho) > POSITION_ERROR:
-            yaw_disturbance = -0.1 * (alpha/abs(alpha))
-        # Move forward until you get there
-        elif abs(rho) > POSITION_ERROR:
-            pitch_disturbance = 1
-        # Turn the final direction
-        elif abs(eta) > HEADING_ERROR:
-            yaw_disturbance = 0.1
 
     roll_input = ROLL_P * clamp(roll, -1, 1) + roll_acceleration + roll_disturbance
     pitch_input = PITCH_P * clamp(pitch, -1, 1) - pitch_acceleration + pitch_disturbance
     yaw_input = yaw_disturbance
     clamped_altitude_difference = clamp(goal_altitude - altitude + VERTICAL_OFFSET, -1, 1)
-    vertical_input = VERTICAL_P * (clamped_altitude_difference**3)
+    vertical_input = VERTICAL_P * (clamped_altitude_difference**1)
 
     fl_motor_in = VERTICAL_THRUST + vertical_input - roll_input - pitch_input + yaw_input
     fr_motor_in = -1*(VERTICAL_THRUST + vertical_input + roll_input - pitch_input - yaw_input)
     rl_motor_in = -1*(VERTICAL_THRUST + vertical_input - roll_input + pitch_input - yaw_input)
     rr_motor_in = VERTICAL_THRUST + vertical_input + roll_input + pitch_input + yaw_input
+
+    print("roll_input: " + str(roll_input) + " pitch input: " + str(pitch_input) + " yaw input: " + str(yaw_input) + " altitude difference: " + str(clamped_altitude_difference) + " vertical input: " + str(vertical_input))
 
     fl_motor.setVelocity(fl_motor_in)
     fr_motor.setVelocity(fr_motor_in)

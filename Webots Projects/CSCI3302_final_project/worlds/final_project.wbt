@@ -1,11 +1,17 @@
 #VRML_SIM R2021b utf8
 WorldInfo {
+  basicTimeStep 8
+  defaultDamping Damping {
+    linear 0.5
+    angular 0.5
+  }
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation -0.4368097540419515 0.8544120534207958 0.28138457978906584 1.237519760926909
-  position 1.098737549147801 0.8376529382463936 0.5646249818818698
+  orientation -0.19641726128075787 -0.9601389308988253 -0.19888059946467257 1.6958388196912235
+  position -2.261381017987231 1.0690936261619164 -0.013485875641906264
   follow "Mavic 2 PRO"
+  followType "Mounted Shot"
 }
 TexturedBackground {
 }
@@ -92,8 +98,8 @@ StraightStairs {
   name "straight stairs(3)"
 }
 Mavic2Pro {
-  translation -0.043016 0.11177 -0.00162264
-  rotation -0.9994108055688984 -0.024307787171668076 -0.024231656875715747 1.5701199126361054
+  translation 0 0.1 0
+  rotation -1 0 0 1.57
   controller "final_controller"
   bodySlot [
     SickS300 {
