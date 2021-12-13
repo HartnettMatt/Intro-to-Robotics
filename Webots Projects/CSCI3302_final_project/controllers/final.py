@@ -13,6 +13,13 @@ VERTICAL_P = 3.0
 ROLL_P = 50.0
 PITCH_P = 30.0
 
+MAP_WIDTH = 150
+MAP_HEIGHT = 50
+
+LIDAR_SENSOR_MAX_RANGE = 3 # Meters
+LIDAR_ANGLE_BINS = 21 # 21 Bins to cover the angular range of the lidar, centered at 10
+LIDAR_ANGLE_RANGE = 1.5708 # 90 degrees, 1.5708 radians
+
 goal_altitude = 0.5 # meters
 
 # mode = "manual"
@@ -34,6 +41,7 @@ robot = Robot()
 # get the time step of the current world.
 SIM_TIMESTEP = int(robot.getBasicTimeStep())
 
+# Enable sensors
 camera = robot.getDevice("camera")
 camera.enable(SIM_TIMESTEP)
 imu = robot.getDevice("inertial unit")
@@ -44,10 +52,17 @@ compass = robot.getDevice("compass")
 compass.enable(SIM_TIMESTEP)
 gyro = robot.getDevice("gyro")
 gyro.enable(SIM_TIMESTEP)
+lidar = robot.getDevice("LDS-01")
+lidar.enable(SIM_TIMESTEP)
+lidar.enablePointCloud()
+
+# Get motors
 fl_motor = robot.getDevice("front left propeller")
 fr_motor = robot.getDevice("front right propeller")
 rl_motor = robot.getDevice("rear left propeller")
 rr_motor = robot.getDevice("rear right propeller")
+
+# Enable keyboard controls (for manual)
 keyboard = Keyboard();
 keyboard.enable(SIM_TIMESTEP)
 
@@ -60,6 +75,9 @@ for motor in motors:
     motor.setPosition(math.inf)
     motor.setVelocity(1)
 
+lidar_sensor_readings = []
+lidar_offsets = np.linspace(-0.5*LIDAR_ANGLE_RANGE, 0.5*LIDAR_ANGLE_RANGE, LIDAR_ANGLE_BINS)
+
 # Main loop:
 # - perform simulation steps until Webots is stopping the controller
 while robot.step(SIM_TIMESTEP) != -1:
@@ -69,10 +87,19 @@ while robot.step(SIM_TIMESTEP) != -1:
     pitch = RollPitchYaw[1]
     yaw = RollPitchYaw[2]
     gps_values = gps.getValues()
-    altitude = gps_values[1]
     gyros = gyro.getValues()
     roll_acceleration = gyros[0]
     pitch_acceleration = gyros[1]
+    lidar_sensor_readings = lidar.getRangeImage()
+    pose_x = gps_values[0]
+    pose_z = gps_values[1]
+    pose_y = gps_values[2]
+    pose_theta = -1*yaw
+
+    # Pose of the robot in terms of the lidar map
+    pixel_pose_x = (int)(pose_x*MAP_WIDTH/15)
+    pixel_pose_y = (int)(pose_y*MAP_WIDTH/15)
+    pixel_pose_z = (int)(pose_z*MAP_HEIGHT/5)
 
     # Process sensor data here.
     roll_disturbance = 0
@@ -93,9 +120,6 @@ while robot.step(SIM_TIMESTEP) != -1:
         elif key == keyboard.SHIFT + Keyboard.DOWN:
             goal_altitude = goal_altitude - 0.01
     elif mode == "path_following":
-        pose_x = gps_values[0]
-        pose_y = gps_values[2]
-        pose_theta = -1*yaw
         print("gps values: " + str(gps_values) + " yaw: " + str(yaw))
         goal_altitude = path[path_index][2]
         # Position error:
@@ -119,7 +143,7 @@ while robot.step(SIM_TIMESTEP) != -1:
     roll_input = ROLL_P * clamp(roll, -1, 1) + roll_acceleration + roll_disturbance
     pitch_input = PITCH_P * clamp(pitch, -1, 1) - pitch_acceleration + pitch_disturbance
     yaw_input = yaw_disturbance
-    clamped_altitude_difference = clamp(goal_altitude - altitude + VERTICAL_OFFSET, -1, 1)
+    clamped_altitude_difference = clamp(goal_altitude - pose_z + VERTICAL_OFFSET, -1, 1)
     vertical_input = VERTICAL_P * (clamped_altitude_difference**3)
 
     fl_motor_in = VERTICAL_THRUST + vertical_input - roll_input - pitch_input + yaw_input
