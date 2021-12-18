@@ -4,7 +4,7 @@ import time
 import random
 import copy
 import numpy as np
-from controller import Robot, Camera, Compass, GPS, Gyro, InertialUnit, Keyboard, Motor, DistanceSensor
+from controller import Robot, Camera, GPS, Gyro, InertialUnit, Keyboard, Motor, DistanceSensor
 
 LIDAR_MAX_RANGE = 30
 VERTICAL_THRUST = 68.5
@@ -48,8 +48,6 @@ imu = robot.getDevice("inertial unit")
 imu.enable(SIM_TIMESTEP)
 gps = robot.getDevice("gps")
 gps.enable(1)
-compass = robot.getDevice("compass")
-compass.enable(SIM_TIMESTEP)
 gyro = robot.getDevice("gyro")
 gyro.enable(SIM_TIMESTEP)
 lidar = robot.getDevice("LDS-01")
@@ -105,8 +103,8 @@ while robot.step(SIM_TIMESTEP) != -1:
     # Process sensor data here.
 
     # Map LIDAR data
-    transform = [[math.sin(pose_theta), -1*math.cos(pose_theta), pose_x],
-                 [math.cos(pose_theta), math.sin(pose_theta), pose_y],
+    transform = [[math.sin(yaw), -1*math.cos(yaw), pose_x],
+                 [math.cos(yaw), math.sin(yaw), pose_y],
                  [0,0,1]]
     lidar_world_x = []
     lidar_world_y = []
@@ -183,6 +181,11 @@ while robot.step(SIM_TIMESTEP) != -1:
         # Turn the final direction
         elif abs(eta) > HEADING_ERROR:
             yaw_disturbance = 0.1 * (eta/abs(eta))
+        elif abs(eta) < HEADING_ERROR and abs(rho) < POSITION_ERROR:
+            path_index = path_index + 1
+            if path_index >= len(path):
+                print("Finished going through destinations, looping back")
+                path_index = 0
 
     roll_input = ROLL_P * clamp(roll, -1, 1) + roll_acceleration + roll_disturbance
     pitch_input = PITCH_P * clamp(pitch, -1, 1) - pitch_acceleration + pitch_disturbance
